@@ -1,0 +1,98 @@
+<% locals.adminPage = 'broadcast'; locals.layout = 'layout_admin' %>
+
+<div style="display:grid;grid-template-columns:1fr 380px;gap:20px">
+
+  <!-- History -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">Sent Broadcasts</div></div>
+    <% if (broadcasts.length === 0) { %>
+    <div class="card-body" style="text-align:center;color:var(--muted);padding:40px">No broadcasts sent yet.</div>
+    <% } else { %>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>Subject</th><th>Tier Filter</th><th>Recipients</th><th>Sent By</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+          <% broadcasts.forEach(b => { %>
+          <tr>
+            <td style="font-weight:600;max-width:200px">
+              <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><%= b.subject %></div>
+            </td>
+            <td><%= b.tier_filter ? '<span class="badge badge-' + b.tier_filter + '">' + b.tier_filter + '</span>' : '<span style="color:var(--muted)">All</span>' %></td>
+            <td><%= b.recipient_count %></td>
+            <td style="color:var(--muted)"><%= b.author || 'Admin' %></td>
+            <td style="font-size:11px;color:var(--muted)"><%= b.sent_at ? new Date(b.sent_at).toLocaleDateString('en-ZA') : '—' %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- Compose -->
+  <div class="card" style="position:sticky;top:76px;align-self:start">
+    <div class="card-header"><div class="card-title">Send Broadcast</div></div>
+    <div class="card-body">
+      <div id="msg" class="alert-success" style="display:none"></div>
+      <div id="err" class="alert-error" style="display:none"></div>
+      <div class="form-group">
+        <label class="form-label">Recipient Tier</label>
+        <select class="form-select" id="bTier">
+          <option value="">All active members</option>
+          <option value="foundation">Foundation only</option>
+          <option value="practitioner">Practitioner only</option>
+          <option value="elite">Elite only</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subject Line</label>
+        <input type="text" class="form-input" id="bSubject" placeholder="e.g. Important: New FSCA Guidance Note">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Body</label>
+        <textarea class="form-textarea" id="bBody" style="min-height:150px"
+          placeholder="Write your message here. Plain text — line breaks are preserved."></textarea>
+      </div>
+      <button onclick="sendBroadcast()" class="btn btn-primary" style="width:100%;justify-content:center" id="sendBtn">
+        Send Broadcast →
+      </button>
+      <p style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">
+        Emails are sent via SendGrid. Respect POPIA obligations.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+async function sendBroadcast() {
+  const subject = document.getElementById('bSubject').value.trim();
+  const body = document.getElementById('bBody').value.trim();
+  const tier = document.getElementById('bTier').value;
+  const msg = document.getElementById('msg');
+  const err = document.getElementById('err');
+  const btn = document.getElementById('sendBtn');
+  msg.style.display='none'; err.style.display='none';
+
+  if (!subject || !body) { err.textContent='Subject and body required'; err.style.display='block'; return; }
+
+  if (!confirm('Send broadcast to ' + (tier || 'all active') + ' members?')) return;
+
+  btn.disabled=true; btn.textContent='Sending…';
+
+  try {
+    const res = await fetch('/admin/broadcast/send',{
+      method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
+      body:JSON.stringify({subject,body,tier_filter:tier||undefined})
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent=data.error||'Error'; err.style.display='block'; }
+    else { msg.textContent=data.message; msg.style.display='block';
+      document.getElementById('bSubject').value=''; document.getElementById('bBody').value='';
+      setTimeout(()=>location.reload(),2000); }
+  } catch { err.textContent='Network error'; err.style.display='block'; }
+
+  btn.disabled=false; btn.textContent='Send Broadcast →';
+}
+</script>

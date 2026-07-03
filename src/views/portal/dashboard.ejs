@@ -1,0 +1,142 @@
+<% locals.activePage = 'dashboard' %>
+
+<% if (paymentMessage === 'success') { %>
+<div class="alert-box alert-success">✓ Payment confirmed — your membership is now active. Welcome!</div>
+<% } else if (paymentMessage === 'cancelled') { %>
+<div class="alert-box alert-warn">Payment was cancelled. <a href="/portal/subscribe">Try again</a></div>
+<% } %>
+
+<!-- Stats row -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">CPD Hours — <%= new Date().getFullYear() %></div>
+    <div class="stat-value"><%= cpdHours %> <span style="font-size:18px;color:var(--muted)">/ 30</span></div>
+    <div class="progress-bar">
+      <div class="progress-fill <%= parseFloat(cpdHours) >= 30 ? 'green' : '' %>"
+           style="width:<%= Math.min(100, (parseFloat(cpdHours)/30)*100).toFixed(0) %>%"></div>
+    </div>
+    <div class="stat-sub"><%= (30 - parseFloat(cpdHours)).toFixed(1) > 0 ? (30 - parseFloat(cpdHours)).toFixed(1) + ' hours remaining' : 'Annual target met ✓' %></div>
+  </div>
+  <div class="stat-card gold">
+    <div class="stat-label">Membership Tier</div>
+    <div class="stat-value" style="font-size:24px;text-transform:capitalize"><%= member.tier %></div>
+    <div class="stat-sub" style="margin-top:8px"><a href="/portal/subscribe" style="color:var(--gold);font-size:12px">Upgrade →</a></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Account Status</div>
+    <div class="stat-value" style="font-size:20px;text-transform:capitalize">
+      <span style="color:<%= member.status === 'active' ? '#22C55E' : '#F59E0B' %>">
+        <%= member.status === 'active' ? '● Active' : '○ ' + member.status %>
+      </span>
+    </div>
+    <% if (member.status === 'pending') { %>
+    <div class="stat-sub">Payment required to activate</div>
+    <% } %>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Unread Alerts</div>
+    <div class="stat-value">
+      <%= recentAlerts.filter(a => !a.is_read).length %>
+    </div>
+    <div class="stat-sub"><a href="/portal/alerts" style="color:var(--navy);font-size:12px">View all →</a></div>
+  </div>
+</div>
+
+<!-- Main content grid -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+  <!-- Recent alerts -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Compliance Alerts</div>
+      <a href="/portal/alerts" class="btn btn-outline btn-sm">View all</a>
+    </div>
+    <div style="padding:0">
+      <% if (recentAlerts.length === 0) { %>
+      <p style="padding:20px;color:var(--muted);font-size:13px">No alerts yet.</p>
+      <% } %>
+      <% recentAlerts.forEach(a => { %>
+      <a href="/portal/alerts" style="text-decoration:none">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);
+          background:<%= a.is_read ? 'white' : '#FFFBF0' %>;display:flex;gap:12px;align-items:flex-start">
+          <span style="font-size:16px;margin-top:1px">
+            <%= a.severity === 'critical' ? '🔴' : a.severity === 'warning' ? '🟡' : '🔵' %>
+          </span>
+          <div style="min-width:0">
+            <div style="font-size:13px;font-weight:<%= a.is_read ? '400' : '600' %>;color:var(--ink);
+              margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              <%= a.title %>
+            </div>
+            <div style="font-size:11px;color:var(--muted);display:flex;gap:8px">
+              <span class="badge badge-<%= a.severity %>"><%= a.category %></span>
+              <span><%= new Date(a.published_at).toLocaleDateString('en-ZA') %></span>
+            </div>
+          </div>
+          <% if (!a.is_read) { %>
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--gold);
+            flex-shrink:0;margin-top:4px"></span>
+          <% } %>
+        </div>
+      </a>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- CPD progress -->
+  <div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header">
+        <div class="card-title">CPD Progress — <%= new Date().getFullYear() %></div>
+        <a href="/portal/cpd" class="btn btn-outline btn-sm">Manage CPD</a>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:var(--navy);line-height:1">
+              <%= cpdHours %> <span style="font-size:16px;color:var(--muted);font-weight:400">/ 30 hrs</span>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);text-align:right">
+            FSCA Annual Target<br>30 hours required
+          </div>
+        </div>
+        <div class="progress-bar" style="height:12px">
+          <div class="progress-fill <%= parseFloat(cpdHours) >= 30 ? 'green' : '' %>"
+               style="width:<%= Math.min(100, (parseFloat(cpdHours)/30)*100).toFixed(0) %>%"></div>
+        </div>
+        <% if (cpdModules.length > 0) { %>
+        <div style="margin-top:16px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+            letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">Recent Completions</div>
+          <% cpdModules.slice(0,3).forEach(m => { %>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;
+            border-bottom:1px solid var(--border);font-size:13px">
+            <span style="color:var(--ink)"><%= m.module_name %></span>
+            <span style="color:var(--gold);font-weight:600"><%= m.hours %> hrs</span>
+          </div>
+          <% }) %>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Quick Access</div></div>
+      <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <a href="/portal/templates" class="btn btn-outline" style="justify-content:center;flex-direction:column;height:64px;gap:4px">
+          <span>▤</span><span style="font-size:11px">Templates</span>
+        </a>
+        <a href="/portal/ai-advisor" class="btn btn-outline" style="justify-content:center;flex-direction:column;height:64px;gap:4px">
+          <span>◈</span><span style="font-size:11px">AI Advisor</span>
+        </a>
+        <a href="/portal/cpd" class="btn btn-outline" style="justify-content:center;flex-direction:column;height:64px;gap:4px">
+          <span>◎</span><span style="font-size:11px">Log CPD</span>
+        </a>
+        <a href="/portal/subscribe" class="btn btn-primary" style="justify-content:center;flex-direction:column;height:64px;gap:4px">
+          <span>↑</span><span style="font-size:11px">Upgrade</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

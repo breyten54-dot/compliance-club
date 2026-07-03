@@ -1,0 +1,155 @@
+<% locals.adminPage = 'alerts'; locals.layout = 'layout_admin' %>
+
+<div style="display:grid;grid-template-columns:1fr 380px;gap:20px">
+
+  <!-- Alert list -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Compliance Alerts (<%= alerts.length %>)</div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>Title</th><th>Severity</th><th>Category</th><th>Tier</th><th>Published</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% alerts.forEach(a => { %>
+          <tr>
+            <td style="font-weight:600;max-width:200px">
+              <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><%= a.title %></div>
+            </td>
+            <td><span class="badge badge-<%= a.severity %>"><%= a.severity %></span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:10px"><%= a.category %></td>
+            <td><span class="badge badge-<%= a.tier_access %>"><%= a.tier_access %></span></td>
+            <td style="font-size:11px;color:var(--muted)"><%= new Date(a.published_at).toLocaleDateString('en-ZA') %></td>
+            <td>
+              <span class="badge" style="background:<%= a.published ? '#DCFCE7' : '#F3F4F6' %>;color:<%= a.published ? '#166534' : '#6B7280' %>">
+                <%= a.published ? 'Live' : 'Draft' %>
+              </span>
+            </td>
+            <td>
+              <button onclick="loadEditAlert(<%= JSON.stringify(a).replace(/</g,'&lt;') %>)" class="btn btn-outline btn-sm">Edit</button>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Create / Edit form -->
+  <div class="card" style="position:sticky;top:76px;align-self:start">
+    <div class="card-header">
+      <div class="card-title" id="formTitle">New Alert</div>
+    </div>
+    <div class="card-body">
+      <div id="formMsg" class="alert-success" style="display:none"></div>
+      <div id="formErr" class="alert-error" style="display:none"></div>
+      <input type="hidden" id="editId">
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-input" id="alertTitle" placeholder="FSCA Sanctions…">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Summary (1 sentence)</label>
+        <input type="text" class="form-input" id="alertSummary" placeholder="Short description for the feed…">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Body</label>
+        <textarea class="form-textarea" id="alertBody" style="min-height:120px" placeholder="Full alert content…"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label class="form-label">Severity</label>
+          <select class="form-select" id="alertSeverity">
+            <option value="info">Info</option>
+            <option value="warning">Warning</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="alertCategory">
+            <option>FSCA</option><option>FIC</option><option>FAIS</option>
+            <option>PPR</option><option>RE</option><option>CPD</option><option>General</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Minimum Tier to See</label>
+        <select class="form-select" id="alertTier">
+          <option value="foundation">Foundation (all members)</option>
+          <option value="practitioner">Practitioner +</option>
+          <option value="elite">Elite only</option>
+        </select>
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="alertPublished" checked>
+        <label for="alertPublished" class="form-label" style="margin:0">Publish immediately</label>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="saveAlert()" class="btn btn-primary" style="flex:1;justify-content:center" id="saveBtn">
+          Publish Alert
+        </button>
+        <button onclick="resetForm()" class="btn btn-outline">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function loadEditAlert(a) {
+  document.getElementById('editId').value = a.id;
+  document.getElementById('alertTitle').value = a.title;
+  document.getElementById('alertSummary').value = a.summary || '';
+  document.getElementById('alertBody').value = a.body;
+  document.getElementById('alertSeverity').value = a.severity;
+  document.getElementById('alertCategory').value = a.category;
+  document.getElementById('alertTier').value = a.tier_access;
+  document.getElementById('alertPublished').checked = a.published;
+  document.getElementById('formTitle').textContent = 'Edit Alert';
+  document.getElementById('saveBtn').textContent = 'Update Alert';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetForm() {
+  document.getElementById('editId').value = '';
+  ['alertTitle','alertSummary','alertBody'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('alertSeverity').value = 'info';
+  document.getElementById('alertCategory').value = 'FSCA';
+  document.getElementById('alertTier').value = 'foundation';
+  document.getElementById('alertPublished').checked = true;
+  document.getElementById('formTitle').textContent = 'New Alert';
+  document.getElementById('saveBtn').textContent = 'Publish Alert';
+}
+
+async function saveAlert() {
+  const editId = document.getElementById('editId').value;
+  const body = {
+    title: document.getElementById('alertTitle').value,
+    summary: document.getElementById('alertSummary').value,
+    body: document.getElementById('alertBody').value,
+    severity: document.getElementById('alertSeverity').value,
+    category: document.getElementById('alertCategory').value,
+    tier_access: document.getElementById('alertTier').value,
+    published: document.getElementById('alertPublished').checked,
+  };
+  const msg = document.getElementById('formMsg');
+  const err = document.getElementById('formErr');
+  msg.style.display='none'; err.style.display='none';
+
+  try {
+    const url = editId ? '/api/alerts/' + editId : '/api/alerts';
+    const method = editId ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method, headers:{'Content-Type':'application/json'}, credentials:'include',
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error||'Error'; err.style.display='block'; return; }
+    msg.textContent = editId ? 'Alert updated.' : 'Alert published.';
+    msg.style.display = 'block';
+    setTimeout(() => location.reload(), 1200);
+  } catch { err.textContent='Network error'; err.style.display='block'; }
+}
+</script>

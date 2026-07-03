@@ -1,0 +1,104 @@
+<% locals.activePage = 'settings' %>
+
+<% if (success) { %>
+<div class="alert-box alert-success">Profile updated successfully.</div>
+<% } %>
+<% if (error) { %>
+<div class="alert-box alert-error">Failed to update profile. Please try again.</div>
+<% } %>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:800px">
+  <!-- Profile -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">Profile Information</div></div>
+    <div class="card-body">
+      <form action="/portal/settings" method="POST">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" name="full_name" class="form-input" value="<%= member.full_name %>" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" value="<%= member.email %>" disabled>
+          <div class="form-hint">Email cannot be changed. Contact support if needed.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">FSP Licence Number</label>
+          <input type="text" name="fsp_licence" class="form-input" value="<%= member.fsp_licence || '' %>" placeholder="e.g. 12345">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mobile Number</label>
+          <input type="tel" name="phone" class="form-input" value="<%= member.phone || '' %>" placeholder="+27 82 000 0000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Province</label>
+          <select name="province" class="form-select">
+            <% ['KwaZulu-Natal','Gauteng','Western Cape','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'].forEach(p => { %>
+            <option <%= (member.province || '') === p ? 'selected' : '' %>><%= p %></option>
+            <% }) %>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Security -->
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><div class="card-title">Change Password</div></div>
+      <div class="card-body">
+        <div id="pwError" class="alert-box alert-error" style="display:none"></div>
+        <div id="pwSuccess" class="alert-box alert-success" style="display:none">Password changed successfully.</div>
+        <div class="form-group">
+          <label class="form-label">Current Password</label>
+          <input type="password" class="form-input" id="current_pw" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input type="password" class="form-input" id="new_pw" placeholder="Min 8 characters">
+        </div>
+        <button class="btn btn-navy" style="width:100%" onclick="changePw()">Update Password</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">Membership</div></div>
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:13px;color:var(--muted)">Current Tier</span>
+          <span class="badge badge-<%= member.tier %>" style="text-transform:capitalize"><%= member.tier %></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+          <span style="font-size:13px;color:var(--muted)">Status</span>
+          <span class="badge badge-<%= member.status %>"><%= member.status %></span>
+        </div>
+        <a href="/portal/subscribe" class="btn btn-primary btn-sm" style="width:100%;justify-content:center">
+          Upgrade Membership →
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function changePw() {
+  const current = document.getElementById('current_pw').value;
+  const newPw = document.getElementById('new_pw').value;
+  const err = document.getElementById('pwError');
+  const suc = document.getElementById('pwSuccess');
+  err.style.display='none'; suc.style.display='none';
+  if (!current || newPw.length < 8) { err.textContent='Please fill both fields (min 8 chars)'; err.style.display='block'; return; }
+  try {
+    const res = await fetch('/api/auth/change-password',{
+      method:'PUT',headers:{'Content-Type':'application/json'},credentials:'include',
+      body:JSON.stringify({current_password:current,new_password:newPw})
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent=data.error||'Error'; err.style.display='block'; return; }
+    suc.style.display='block';
+    document.getElementById('current_pw').value='';
+    document.getElementById('new_pw').value='';
+  } catch { err.textContent='Network error'; err.style.display='block'; }
+}
+</script>

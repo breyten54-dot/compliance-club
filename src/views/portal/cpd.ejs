@@ -1,0 +1,128 @@
+<% locals.activePage = 'cpd' %>
+
+<% if (locals.logged) { %>
+<div class="alert-box alert-success">CPD hours logged successfully.</div>
+<% } %>
+<% if (locals.cpdError) { %>
+<div class="alert-box alert-error">Failed to log CPD. Please try again.</div>
+<% } %>
+
+<!-- Summary row -->
+<div class="stats-grid" style="margin-bottom:24px">
+  <div class="stat-card gold">
+    <div class="stat-label">Hours Completed — <%= year %></div>
+    <div class="stat-value"><%= totalHours %></div>
+    <div class="stat-sub">of 30 hrs FSCA annual target</div>
+  </div>
+  <div class="stat-card <%= parseFloat(totalHours) >= 30 ? 'green' : '' %>">
+    <div class="stat-label">Hours Remaining</div>
+    <div class="stat-value"><%= Math.max(0, 30 - parseFloat(totalHours)).toFixed(1) %></div>
+    <div class="stat-sub"><%= parseFloat(totalHours) >= 30 ? '✓ Annual target met!' : 'to meet FSCA requirement' %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Modules Completed</div>
+    <div class="stat-value"><%= records.length %></div>
+    <div class="stat-sub">in <%= year %></div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+  <!-- Log CPD -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">Log CPD Hours</div></div>
+    <div class="card-body">
+      <form action="/portal/cpd/log" method="POST">
+        <div class="form-group">
+          <label class="form-label">Module / Course Name</label>
+          <input type="text" name="module_name" class="form-input" placeholder="e.g. FIC Act AML/CFT Programme" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Provider</label>
+          <input type="text" name="provider" class="form-input" value="Praeto Training Institute" required>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">Hours</label>
+            <input type="number" name="hours" class="form-input" placeholder="e.g. 3" min="0.5" max="30" step="0.5" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">CPD Year</label>
+            <input type="number" name="cpd_year" class="form-input" value="<%= year %>" min="2020" max="2030" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%">Log CPD Hours →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CPD Modules catalogue -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Available Modules</div>
+      <span style="font-size:12px;color:var(--muted)"><%= modules.length %> modules</span>
+    </div>
+    <div style="max-height:400px;overflow-y:auto">
+      <% modules.forEach(m => { %>
+      <div style="padding:12px 20px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px"><%= m.title %></div>
+            <div style="font-size:11px;color:var(--muted)"><%= m.category %></div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--gold)"><%= m.hours %> hrs</div>
+            <span class="badge badge-<%= m.tier_access %>" style="margin-top:3px;display:inline-block"><%= m.tier_access %></span>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+
+<!-- CPD history -->
+<div class="card" style="margin-top:20px">
+  <div class="card-header">
+    <div class="card-title">CPD Record — <%= year %></div>
+    <div style="display:flex;gap:8px">
+      <a href="/portal/cpd?year=<%= year - 1 %>" class="btn btn-outline btn-sm">← <%= year - 1 %></a>
+      <% if (year < currentYear) { %>
+      <a href="/portal/cpd?year=<%= year + 1 %>" class="btn btn-outline btn-sm"><%= year + 1 %> →</a>
+      <% } %>
+    </div>
+  </div>
+  <% if (records.length === 0) { %>
+  <div class="card-body" style="text-align:center;padding:40px;color:var(--muted)">
+    No CPD records for <%= year %> yet. Use the form above to log your first module.
+  </div>
+  <% } else { %>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Provider</th>
+          <th>Hours</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% records.forEach(r => { %>
+        <tr>
+          <td style="font-weight:500"><%= r.module_name %></td>
+          <td style="color:var(--muted)"><%= r.provider %></td>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--gold)"><%= r.hours %></span></td>
+          <td style="color:var(--muted)"><%= new Date(r.completed_at).toLocaleDateString('en-ZA') %></td>
+        </tr>
+        <% }) %>
+        <tr style="background:var(--surface)">
+          <td colspan="2" style="font-weight:700;color:var(--navy)">Total</td>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--navy)"><%= totalHours %> hrs</span></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>

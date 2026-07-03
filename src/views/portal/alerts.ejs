@@ -1,0 +1,90 @@
+<% locals.activePage = 'alerts' %>
+
+<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+  <button onclick="filterAlerts('all')" id="filter-all" class="btn btn-navy btn-sm">All</button>
+  <button onclick="filterAlerts('critical')" id="filter-critical" class="btn btn-outline btn-sm">🔴 Critical</button>
+  <button onclick="filterAlerts('warning')" id="filter-warning" class="btn btn-outline btn-sm">🟡 Warning</button>
+  <button onclick="filterAlerts('info')" id="filter-info" class="btn btn-outline btn-sm">🔵 Info</button>
+</div>
+
+<% if (alerts.length === 0) { %>
+<div class="card"><div class="card-body" style="text-align:center;padding:60px">
+  <div style="font-size:40px;margin-bottom:12px">✓</div>
+  <p style="color:var(--muted)">No compliance alerts at this time. You're up to date.</p>
+</div></div>
+<% } %>
+
+<div id="alertsList">
+<% alerts.forEach(a => { %>
+<div class="card alert-item" data-severity="<%= a.severity %>"
+  style="margin-bottom:12px;cursor:pointer;transition:box-shadow 0.15s"
+  onclick="toggleAlert('<%= a.id %>')" id="card-<%= a.id %>">
+  <div style="padding:18px 20px;display:flex;gap:14px;align-items:flex-start">
+    <span style="font-size:20px;margin-top:2px">
+      <%= a.severity === 'critical' ? '🔴' : a.severity === 'warning' ? '🟡' : '🔵' %>
+    </span>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
+        <span class="badge badge-<%= a.severity %>"><%= a.severity.toUpperCase() %></span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+          background:var(--surface);padding:2px 7px;border-radius:2px;border:1px solid var(--border)">
+          <%= a.category %>
+        </span>
+        <span style="font-size:11px;color:var(--muted)">
+          <%= new Date(a.published_at).toLocaleDateString('en-ZA', {day:'numeric',month:'long',year:'numeric'}) %>
+        </span>
+        <% if (!a.is_read) { %>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;background:var(--gold);
+          color:var(--navy);padding:2px 7px;border-radius:2px;font-weight:700">NEW</span>
+        <% } %>
+      </div>
+      <div style="font-size:15px;font-weight:<%= a.is_read ? 500 : 700 %>;color:var(--ink);margin-bottom:4px">
+        <%= a.title %>
+      </div>
+      <% if (a.summary) { %>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6"><%= a.summary %></div>
+      <% } %>
+    </div>
+    <span id="chevron-<%= a.id %>" style="color:var(--muted);transition:transform 0.25s">▼</span>
+  </div>
+  <div id="body-<%= a.id %>" style="display:none;padding:0 20px 20px 54px;
+    border-top:1px solid var(--border);padding-top:16px">
+    <div style="font-size:14px;color:var(--ink);line-height:1.8;white-space:pre-line"><%= a.body %></div>
+    <div style="margin-top:16px">
+      <a href="/portal/templates" class="btn btn-primary btn-sm">View Related Templates →</a>
+    </div>
+  </div>
+</div>
+<% }) %>
+</div>
+
+<script>
+const openAlerts = new Set();
+
+async function toggleAlert(id) {
+  const body = document.getElementById('body-' + id);
+  const chevron = document.getElementById('chevron-' + id);
+  if (openAlerts.has(id)) {
+    body.style.display = 'none';
+    chevron.style.transform = 'rotate(0)';
+    openAlerts.delete(id);
+  } else {
+    body.style.display = 'block';
+    chevron.style.transform = 'rotate(180deg)';
+    openAlerts.add(id);
+    // Mark as read
+    try {
+      await fetch('/api/alerts/' + id, { credentials: 'include' });
+    } catch {}
+  }
+}
+
+function filterAlerts(severity) {
+  document.querySelectorAll('.alert-item').forEach(el => {
+    el.style.display = severity === 'all' || el.dataset.severity === severity ? '' : 'none';
+  });
+  document.querySelectorAll('[id^="filter-"]').forEach(btn => {
+    btn.className = btn.id === 'filter-' + severity ? 'btn btn-navy btn-sm' : 'btn btn-outline btn-sm';
+  });
+}
+</script>

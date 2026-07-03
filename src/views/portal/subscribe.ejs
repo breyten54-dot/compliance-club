@@ -1,0 +1,97 @@
+<% locals.activePage = 'subscribe' %>
+
+<div style="max-width:700px">
+  <div id="errorBox" class="alert-box alert-error" style="display:none"></div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);
+    border-radius:4px;overflow:hidden;margin-bottom:24px">
+
+    <% const tiers = [
+      { key:'foundation', label:'Foundation', price:2500, features:['Full CPD library (20+ modules)','FSCA regulatory alert service','ROA, FNA & compliance templates','KI Supervision log templates','Monthly Compliance Report','CPD tracking dashboard'] },
+      { key:'practitioner', label:'Practitioner', price:5000, popular:true, features:['Everything in Foundation','Done-for-you ROA/FNA review','Cell captive funeral scheme access','Full compliance manual templates','Monthly live webinar','FIC Act AML/CFT programme template'] },
+      { key:'elite', label:'Elite KI Circle', price:15000, features:['Everything in Practitioner','Quarterly personal compliance audit','1:1 KI mentoring with Berkeley','FSCA representation support','Elite KI Mastermind Circle','Complimentary Summit access'] },
+    ] %>
+    <% tiers.forEach(t => { %>
+    <div style="padding:24px 20px;position:relative;
+      background:<%= t.key === 'practitioner' ? 'var(--navy)' : 'white' %>;
+      border-right:<%= t.key !== 'elite' ? '1px solid var(--border)' : 'none' %>">
+      <% if (t.popular) { %>
+      <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);
+        background:var(--gold);color:var(--navy);font-family:'JetBrains Mono',monospace;
+        font-size:9px;font-weight:700;letter-spacing:0.1em;padding:3px 12px;border-radius:0 0 4px 4px">
+        MOST POPULAR
+      </div>
+      <% } %>
+      <div class="badge badge-<%= t.key %>" style="margin-bottom:12px;margin-top:<%= t.popular ? '12px' : '0' %>">
+        <%= t.label %>
+      </div>
+      <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:900;
+        color:<%= t.key === 'practitioner' ? 'var(--gold)' : 'var(--navy)' %>;margin-bottom:4px">
+        R<%= t.price.toLocaleString() %>
+      </div>
+      <div style="font-size:12px;color:<%= t.key === 'practitioner' ? 'rgba(255,255,255,0.5)' : 'var(--muted)' %>;margin-bottom:16px">
+        per month
+      </div>
+      <ul style="list-style:none;margin-bottom:20px">
+        <% t.features.forEach(f => { %>
+        <li style="font-size:12px;color:<%= t.key === 'practitioner' ? 'rgba(255,255,255,0.8)' : 'var(--ink)' %>;
+          padding:4px 0;display:flex;gap:8px;line-height:1.5">
+          <span style="color:#22C55E;flex-shrink:0">✓</span><%= f %>
+        </li>
+        <% }) %>
+      </ul>
+      <button onclick="subscribe('<%= t.key %>')"
+        class="btn <%= t.key === 'practitioner' ? 'btn-primary' : 'btn-navy' %>"
+        style="width:100%;justify-content:center;
+          <%= member.tier === t.key && member.status === 'active' ? 'opacity:0.5;pointer-events:none' : '' %>">
+        <%= member.tier === t.key && member.status === 'active' ? 'Current Plan' : 'Subscribe →' %>
+      </button>
+    </div>
+    <% }) %>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="font-size:13px;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--ink)">Payment via PayFast:</strong>
+      You will be redirected to PayFast's secure payment gateway to complete your subscription.
+      Monthly recurring billing — cancel anytime with 30 days' notice. All prices exclude VAT.
+      <br><br>
+      Questions? Email <a href="mailto:members@praeto.co.za" style="color:var(--navy)">members@praeto.co.za</a>
+    </div>
+  </div>
+</div>
+
+<!-- PayFast redirect form (hidden) -->
+<form id="pfForm" action="" method="POST" style="display:none"></form>
+
+<script>
+async function subscribe(tier) {
+  const errBox = document.getElementById('errorBox');
+  errBox.style.display = 'none';
+  try {
+    const res = await fetch('/api/payments/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ tier }),
+    });
+    const data = await res.json();
+    if (!res.ok) { errBox.textContent = data.error || 'Error'; errBox.style.display = 'block'; return; }
+
+    // Build PayFast form and submit
+    const form = document.getElementById('pfForm');
+    form.action = data.endpoint;
+    form.innerHTML = '';
+    Object.entries(data.fields).forEach(([k, v]) => {
+      if (v == null || v === '') return;
+      const input = document.createElement('input');
+      input.type = 'hidden'; input.name = k; input.value = v;
+      form.appendChild(input);
+    });
+    form.submit();
+  } catch {
+    errBox.textContent = 'Network error. Please try again.';
+    errBox.style.display = 'block';
+  }
+}
+</script>

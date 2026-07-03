@@ -1,0 +1,28 @@
+{
+  "name": "praeto-compliance-club-vercel",
+  "version": "1.0.0",
+  "description": "Praeto Compliance Club — Vercel deployment (frontend + serverless backend)",
+  "private": true,
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "@sendgrid/mail": "^8.1.3",
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "express-validator": "^7.1.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0",
+    "serverless-http": "^3.2.0"
+  },
+  "scripts": {
+    "seed": "node src/db/seed.js"
+  }
+}

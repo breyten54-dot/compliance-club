@@ -1,0 +1,111 @@
+<% locals.adminPage = 'dashboard'; locals.layout = 'layout_admin' %>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Active Members</div>
+    <div class="stat-value"><%= stats.members.active %></div>
+    <div class="stat-sub"><%= stats.members.pending %> pending applications</div>
+  </div>
+  <div class="stat-card" style="border-top:3px solid var(--gold)">
+    <div class="stat-label">MRR (This Month)</div>
+    <div class="stat-value" style="font-size:22px">
+      R<%= stats.revenue.mrr ? parseFloat(stats.revenue.mrr).toLocaleString('en-ZA',{minimumFractionDigits:0}) : '0' %>
+    </div>
+    <div class="stat-sub">Total: R<%= stats.revenue.total_revenue ? parseFloat(stats.revenue.total_revenue).toLocaleString('en-ZA',{minimumFractionDigits:0}) : '0' %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Foundation Members</div>
+    <div class="stat-value"><%= stats.members.foundation %></div>
+    <div class="stat-sub">R2,500/month</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Practitioner Members</div>
+    <div class="stat-value"><%= stats.members.practitioner %></div>
+    <div class="stat-sub">R5,000/month</div>
+  </div>
+  <div class="stat-card" style="border-top:3px solid var(--gold)">
+    <div class="stat-label">Elite KI Members</div>
+    <div class="stat-value"><%= stats.members.elite %></div>
+    <div class="stat-sub">of 30 seats · R15,000/month</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Alerts Published</div>
+    <div class="stat-value"><%= stats.alerts.total %></div>
+    <div class="stat-sub"><a href="/admin/alerts" style="color:var(--navy);font-size:11px">Manage →</a></div>
+  </div>
+</div>
+
+<!-- Pending applications -->
+<% if (pendingMembers.length > 0) { %>
+<div class="card" style="margin-bottom:20px;border-left:3px solid var(--gold)">
+  <div class="card-header">
+    <div class="card-title">Pending Applications (<%=pendingMembers.length%>)</div>
+    <a href="/admin/members?status=pending" class="btn btn-outline btn-sm">View all</a>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Tier</th><th>Applied</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <% pendingMembers.forEach(m => { %>
+        <tr>
+          <td style="font-weight:600"><%= m.full_name %></td>
+          <td><a href="mailto:<%= m.email %>" style="color:var(--navy)"><%= m.email %></a></td>
+          <td><span class="badge badge-<%= m.tier %>"><%= m.tier %></span></td>
+          <td style="color:var(--muted)"><%= new Date(m.created_at).toLocaleDateString('en-ZA') %></td>
+          <td>
+            <button onclick="updateMemberStatus('<%= m.id %>','active')" class="btn btn-primary btn-sm">Activate</button>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
+<!-- Quick actions -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+  <div class="card">
+    <div class="card-header"><div class="card-title">Quick Actions</div></div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+      <a href="/admin/alerts" class="btn btn-primary" style="justify-content:center">+ Publish New Alert</a>
+      <a href="/admin/broadcast" class="btn btn-navy" style="justify-content:center">✉ Send Broadcast Email</a>
+      <a href="/admin/members" class="btn btn-outline" style="justify-content:center">◎ Manage Members</a>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Revenue Breakdown</div></div>
+    <div class="card-body">
+      <% const f=2500,p=5000,e=15000 %>
+      <% const mrrF=parseInt(stats.members.foundation)*f, mrrP=parseInt(stats.members.practitioner)*p, mrrE=parseInt(stats.members.elite)*e %>
+      <% const totalMrr=mrrF+mrrP+mrrE %>
+      <table style="width:100%">
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:6px 0;font-size:12px"><span class="badge badge-foundation">Foundation</span></td>
+          <td style="text-align:right;font-size:12px;font-family:'JetBrains Mono',monospace">
+            <%= stats.members.foundation %> × R2,500 = <strong>R<%= mrrF.toLocaleString() %></strong>
+          </td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:6px 0;font-size:12px"><span class="badge badge-practitioner">Practitioner</span></td>
+          <td style="text-align:right;font-size:12px;font-family:'JetBrains Mono',monospace">
+            <%= stats.members.practitioner %> × R5,000 = <strong>R<%= mrrP.toLocaleString() %></strong>
+          </td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:6px 0;font-size:12px"><span class="badge badge-elite">Elite</span></td>
+          <td style="text-align:right;font-size:12px;font-family:'JetBrains Mono',monospace">
+            <%= stats.members.elite %> × R15,000 = <strong>R<%= mrrE.toLocaleString() %></strong>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;font-weight:700;color:var(--navy)">Total MRR</td>
+          <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;
+            font-size:14px;color:var(--navy);padding:8px 0">R<%= totalMrr.toLocaleString() %></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>

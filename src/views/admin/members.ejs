@@ -1,0 +1,98 @@
+<% locals.adminPage = 'members'; locals.layout = 'layout_admin' %>
+
+<!-- Filters -->
+<form method="GET" style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+  <input type="text" name="q" class="form-input" style="width:220px" placeholder="Search name, email, FSP…" value="<%= filters.q || '' %>">
+  <select name="tier" class="form-select" style="width:160px">
+    <option value="">All Tiers</option>
+    <option value="foundation" <%= filters.tier === 'foundation' ? 'selected' : '' %>>Foundation</option>
+    <option value="practitioner" <%= filters.tier === 'practitioner' ? 'selected' : '' %>>Practitioner</option>
+    <option value="elite" <%= filters.tier === 'elite' ? 'selected' : '' %>>Elite</option>
+  </select>
+  <select name="status" class="form-select" style="width:160px">
+    <option value="">All Statuses</option>
+    <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+    <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+    <option value="suspended" <%= filters.status === 'suspended' ? 'selected' : '' %>>Suspended</option>
+    <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+  </select>
+  <button type="submit" class="btn btn-navy">Filter</button>
+  <a href="/admin/members" class="btn btn-outline">Clear</a>
+</form>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">Members (<%= members.length %>)</div>
+    <a href="javascript:exportCsv()" class="btn btn-outline btn-sm">Export CSV</a>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table" id="membersTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>FSP Licence</th>
+          <th>Province</th>
+          <th>Tier</th>
+          <th>Status</th>
+          <th>Joined</th>
+          <th>Last Login</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% members.forEach(m => { %>
+        <tr>
+          <td style="font-weight:600"><%= m.full_name %></td>
+          <td><a href="mailto:<%= m.email %>" style="color:var(--navy);font-size:11px"><%= m.email %></a></td>
+          <td style="font-family:'JetBrains Mono',monospace"><%= m.fsp_licence || '—' %></td>
+          <td style="color:var(--muted)"><%= m.province || '—' %></td>
+          <td>
+            <select onchange="updateMemberTier('<%= m.id %>',this.value)" class="form-select" style="width:120px;padding:4px 8px;font-size:11px">
+              <option value="foundation" <%= m.tier==='foundation'?'selected':'' %>>Foundation</option>
+              <option value="practitioner" <%= m.tier==='practitioner'?'selected':'' %>>Practitioner</option>
+              <option value="elite" <%= m.tier==='elite'?'selected':'' %>>Elite</option>
+            </select>
+          </td>
+          <td><span class="badge badge-<%= m.status %>"><%= m.status %></span></td>
+          <td style="color:var(--muted);font-size:11px"><%= new Date(m.created_at).toLocaleDateString('en-ZA') %></td>
+          <td style="color:var(--muted);font-size:11px"><%= m.last_login_at ? new Date(m.last_login_at).toLocaleDateString('en-ZA') : 'Never' %></td>
+          <td>
+            <div style="display:flex;gap:4px">
+              <% if (m.status !== 'active') { %>
+              <button onclick="updateMemberStatus('<%= m.id %>','active')" class="btn btn-primary btn-sm">Activate</button>
+              <% } %>
+              <% if (m.status === 'active') { %>
+              <button onclick="updateMemberStatus('<%= m.id %>','suspended')" class="btn btn-danger btn-sm">Suspend</button>
+              <% } %>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function exportCsv() {
+  const rows = [['Name','Email','FSP','Province','Tier','Status','Joined']];
+  document.querySelectorAll('#membersTable tbody tr').forEach(tr => {
+    const cells = tr.querySelectorAll('td');
+    rows.push([
+      cells[0].textContent.trim(),
+      cells[1].textContent.trim(),
+      cells[2].textContent.trim(),
+      cells[3].textContent.trim(),
+      cells[4].querySelector('select')?.value || '',
+      cells[5].textContent.trim(),
+      cells[6].textContent.trim(),
+    ]);
+  });
+  const csv = rows.map(r => r.map(v => '"' + v.replace(/"/g,'""') + '"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv,' + encodeURIComponent(csv);
+  a.download = 'praeto-members.csv';
+  a.click();
+}
+</script>

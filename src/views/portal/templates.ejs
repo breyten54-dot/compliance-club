@@ -1,0 +1,86 @@
+<% locals.activePage = 'templates' %>
+<%
+const categories = [...new Set(templates.map(t => t.category))].sort();
+%>
+
+<div style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap">
+  <button onclick="filterTemplates('all')" id="filter-all" class="btn btn-navy btn-sm">All</button>
+  <% categories.forEach(cat => { %>
+  <button onclick="filterTemplates('<%= cat %>')" id="filter-<%= cat.replace(/\//g,'-') %>" class="btn btn-outline btn-sm">
+    <%= cat %>
+  </button>
+  <% }) %>
+</div>
+
+<% if (templates.filter(t => !t.locked).length === 0) { %>
+<div class="card"><div class="card-body" style="text-align:center;padding:40px">
+  <p style="color:var(--muted)">Templates not yet available. Check back soon.</p>
+</div></div>
+<% } %>
+
+<div id="templateGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+<% templates.forEach(t => { %>
+<div class="card template-item" data-category="<%= t.category %>"
+  style="transition:box-shadow 0.15s;<%= t.locked ? 'opacity:0.65' : '' %>">
+  <div class="card-body">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+      <span class="badge badge-<%= t.tier_access %>"><%= t.tier_access %></span>
+      <% if (t.locked) { %>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+        background:var(--surface);padding:2px 7px;border-radius:2px;border:1px solid var(--border)">LOCKED</span>
+      <% } %>
+    </div>
+    <div style="font-weight:600;color:var(--ink);margin-bottom:6px;font-size:14px;line-height:1.4">
+      <%= t.title %>
+    </div>
+    <% if (t.description) { %>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px"><%= t.description %></div>
+    <% } %>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">
+      Updated: <%= new Date(t.updated_at).toLocaleDateString('en-ZA') %>
+    </div>
+    <% if (t.locked) { %>
+    <a href="/portal/subscribe?tier=<%= t.tier_access %>" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">
+      Upgrade to access →
+    </a>
+    <% } else if (t.file_url) { %>
+    <a href="<%= t.file_url %>" target="_blank" class="btn btn-primary btn-sm" style="width:100%;justify-content:center">
+      Download Template →
+    </a>
+    <% } else { %>
+    <div class="btn btn-outline btn-sm" style="width:100%;justify-content:center;cursor:default;opacity:0.6">
+      Coming soon
+    </div>
+    <% } %>
+  </div>
+</div>
+<% }) %>
+</div>
+
+<% if (templates.some(t => t.locked)) { %>
+<div class="card" style="margin-top:24px;border-color:var(--gold)">
+  <div class="card-body" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+    <div>
+      <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--navy);font-weight:700;margin-bottom:4px">
+        Unlock all templates
+      </div>
+      <div style="font-size:13px;color:var(--muted)">
+        Upgrade to Practitioner or Elite to access AML/CFT programmes, compliance manuals, and more.
+      </div>
+    </div>
+    <a href="/portal/subscribe" class="btn btn-primary" style="flex-shrink:0">Upgrade Membership →</a>
+  </div>
+</div>
+<% } %>
+
+<script>
+function filterTemplates(cat) {
+  document.querySelectorAll('.template-item').forEach(el => {
+    el.style.display = cat === 'all' || el.dataset.category === cat ? '' : 'none';
+  });
+  document.querySelectorAll('[id^="filter-"]').forEach(btn => {
+    const id = 'filter-' + (cat === 'all' ? 'all' : cat.replace(/\//g,'-'));
+    btn.className = btn.id === id ? 'btn btn-navy btn-sm' : 'btn btn-outline btn-sm';
+  });
+}
+</script>

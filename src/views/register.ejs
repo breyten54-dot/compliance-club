@@ -1,0 +1,113 @@
+<h2 class="auth-title">Join Praeto Compliance Club</h2>
+<p class="auth-sub">South Africa's premier FSP compliance membership. FSCA-recognised CPD included.</p>
+
+<div id="errorBox" class="error-box" style="display:none"></div>
+<div id="successBox" style="display:none;text-align:center;padding:16px 0">
+  <div style="font-size:40px;margin-bottom:12px">✅</div>
+  <h3 style="font-family:'Playfair Display',serif;color:#1F3864;margin-bottom:8px">Application Received!</h3>
+  <p style="font-size:14px;color:#6B7280;line-height:1.6">
+    Berkeley's team will contact you at <strong id="confirmEmail"></strong> within 2 business hours
+    to complete your onboarding.
+  </p>
+</div>
+
+<div id="regForm">
+  <div class="form-group">
+    <label class="form-label">Full Name</label>
+    <input type="text" class="form-input" id="full_name" placeholder="e.g. Thabo Nkosi">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Email Address</label>
+    <input type="email" class="form-input" id="email" placeholder="thabo@yourfsp.co.za">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Password</label>
+    <input type="password" class="form-input" id="password" placeholder="Minimum 8 characters">
+    <div class="form-hint">At least 8 characters</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">FSP Licence Number</label>
+    <input type="text" class="form-input" id="fsp_licence" placeholder="e.g. 12345">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Mobile Number</label>
+    <input type="tel" class="form-input" id="phone" placeholder="+27 82 000 0000">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Membership Tier</label>
+    <select class="form-select" id="tier">
+      <option value="foundation" <%= selectedTier === 'foundation' ? 'selected' : '' %>>Foundation — R2,500/month</option>
+      <option value="practitioner" <%= selectedTier === 'practitioner' ? 'selected' : '' %>>Practitioner — R5,000/month (Most Popular)</option>
+      <option value="elite" <%= selectedTier === 'elite' ? 'selected' : '' %>>Elite KI Circle — R15,000/month (Max 30)</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Province</label>
+    <select class="form-select" id="province">
+      <option>KwaZulu-Natal</option><option>Gauteng</option><option>Western Cape</option>
+      <option>Eastern Cape</option><option>Limpopo</option><option>Mpumalanga</option>
+      <option>North West</option><option>Free State</option><option>Northern Cape</option>
+    </select>
+  </div>
+  <button class="btn-submit" id="regBtn" onclick="doRegister()">Apply for Membership →</button>
+  <p style="font-size:11px;color:#9CA3AF;text-align:center;margin-top:10px;line-height:1.6">
+    No payment until membership is confirmed. By applying you agree to our Terms & Conditions.
+  </p>
+</div>
+
+<hr class="divider">
+<div class="auth-footer">Already a member? <a href="/portal/login">Sign in →</a></div>
+
+<script>
+async function doRegister() {
+  const btn = document.getElementById('regBtn');
+  const errBox = document.getElementById('errorBox');
+  errBox.style.display = 'none';
+
+  const body = {
+    full_name: document.getElementById('full_name').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    password: document.getElementById('password').value,
+    fsp_licence: document.getElementById('fsp_licence').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    tier: document.getElementById('tier').value,
+    province: document.getElementById('province').value,
+  };
+
+  if (!body.full_name || !body.email || !body.password) {
+    errBox.textContent = 'Please complete your name, email, and password.';
+    errBox.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errBox.textContent = data.error || 'Registration failed. Please try again.';
+      errBox.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Apply for Membership →';
+      return;
+    }
+    document.getElementById('confirmEmail').textContent = body.email;
+    document.getElementById('regForm').style.display = 'none';
+    document.getElementById('successBox').style.display = 'block';
+    // Redirect to portal after 3 seconds
+    setTimeout(() => window.location.href = '/portal', 3000);
+  } catch {
+    errBox.textContent = 'Network error. Please try again.';
+    errBox.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Apply for Membership →';
+  }
+}
+</script>
