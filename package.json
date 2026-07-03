@@ -4,7 +4,7 @@
   "description": "Praeto Compliance Club — Vercel deployment (frontend + serverless backend)",
   "private": true,
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.0",
