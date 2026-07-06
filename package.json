@@ -26,6 +26,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node src/index.js",
-    "seed": "node src/db/seed.js"
+    "migrate": "node src/db/migrate.js",
+    "seed": "node src/db/seed.js",
+    "setup:db": "npm run migrate && npm run seed"
   }
 }
