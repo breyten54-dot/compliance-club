@@ -19,6 +19,10 @@ const alertsRoute   = require('./routes/alerts');
 
 const app = express();
 
+// Behind Vercel's proxy: needed for correct client IPs (rate limiting) and
+// secure cookies. express-rate-limit v7 rejects X-Forwarded-For without this.
+app.set('trust proxy', 1);
+
 // ─── Security ────────────────────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: false, // relax for EJS-rendered pages with inline scripts
@@ -79,7 +83,31 @@ app.get('/', (req, res) => {
 });
 
 // ─── Health check ────────────────────────────────────────────────────────────
-app.get('/health', (req, res) => res.json({ status: 'ok', ts: new Date() }));
+app.get(['/health', '/api/health'], async (req, res) => {
+  const health = {
+    status: 'ok',
+    ts: new Date(),
+    env: {
+      DATABASE_URL: Boolean(process.env.DATABASE_URL),
+      JWT_SECRET: Boolean(process.env.JWT_SECRET),
+      ANTHROPIC_API_KEY: Boolean(process.env.ANTHROPIC_API_KEY),
+      SENDGRID_API_KEY: Boolean(process.env.SENDGRID_API_KEY),
+      PAYFAST_MERCHANT_ID: Boolean(process.env.PAYFAST_MERCHANT_ID),
+      NODE_ENV: process.env.NODE_ENV || null,
+    },
+    db: 'unknown',
+  };
+  try {
+    const db = require('./db');
+    await db.query('SELECT 1');
+    health.db = 'connected';
+  } catch (err) {
+    health.db = 'unreachable';
+    health.dbError = err.message;
+    health.status = 'degraded';
+  }
+  res.status(health.status === 'ok' ? 200 : 503).json(health);
+});
 
 // ─── 404 ─────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -100,8 +128,12 @@ app.use((err, req, res, _next) => {
 });
 
 // ─── Start ───────────────────────────────────────────────────────────────────
-app.listen(config.port, () => {
-  console.log(`Praeto backend running on port ${config.port} [${config.nodeEnv}]`);
-});
+// Only bind a port when run directly (local dev). On Vercel this module is
+// required by api/index.js and must not listen.
+if (require.main === module) {
+  app.listen(config.port, () => {
+    console.log(`Praeto backend running on port ${config.port} [${config.nodeEnv}]`);
+  });
+}
 
 module.exports = app;

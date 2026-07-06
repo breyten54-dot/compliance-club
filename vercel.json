@@ -3,10 +3,27 @@
   "framework": null,
   "cleanUrls": true,
   "trailingSlash": false,
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "src/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "/api/index.js"
+      "destination": "/api"
+    },
+    {
+      "source": "/portal/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/health",
+      "destination": "/api"
     },
     {
       "source": "/app/:path*",

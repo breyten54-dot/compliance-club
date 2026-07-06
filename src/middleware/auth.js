@@ -62,7 +62,9 @@ async function optionalAuth(req, res, next) {
 }
 
 function _unauthorized(req, res) {
-  if (req.accepts('html') && !req.path.startsWith('/api/')) {
+  // req.path is router-relative ('/me' inside the auth router), so test the
+  // original URL to keep API calls returning JSON instead of an HTML redirect.
+  if (req.accepts('html') && !req.originalUrl.startsWith('/api/')) {
     return res.redirect(`/portal/login?next=${encodeURIComponent(req.originalUrl)}`);
   }
   return res.status(401).json({ error: 'Unauthorized — please log in.' });
