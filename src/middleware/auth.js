@@ -77,11 +77,14 @@ function issueToken(memberId) {
 }
 
 function setTokenCookie(res, token) {
+  // Session cookie: no maxAge/expires, so the browser deletes it when the
+  // browser session ends. Effect: fully closing the browser (or the installed
+  // app) logs the member out, while minimizing, switching tabs, refreshing,
+  // and navigating between portal pages all keep them signed in.
   res.cookie('token', token, {
     httpOnly: true,
     secure: config.isProd,
     sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 }
 
