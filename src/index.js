@@ -90,9 +90,11 @@ app.get(['/health', '/api/health'], async (req, res) => {
     env: {
       DATABASE_URL: Boolean(process.env.DATABASE_URL),
       JWT_SECRET: Boolean(process.env.JWT_SECRET),
-      ANTHROPIC_API_KEY: Boolean(process.env.ANTHROPIC_API_KEY),
+      RESEND_API_KEY: Boolean(process.env.RESEND_API_KEY),
       SENDGRID_API_KEY: Boolean(process.env.SENDGRID_API_KEY),
+      ANTHROPIC_API_KEY: Boolean(process.env.ANTHROPIC_API_KEY),
       PAYFAST_MERCHANT_ID: Boolean(process.env.PAYFAST_MERCHANT_ID),
+      FRONTEND_URL: Boolean(process.env.FRONTEND_URL),
       NODE_ENV: process.env.NODE_ENV || null,
     },
     db: 'unknown',
