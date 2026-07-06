@@ -30,6 +30,11 @@ describe('portal pages (server-rendered)', () => {
     expect(res.text).toContain('/api/auth/login');
   });
 
+  it('includes the 15-minute idle-timeout notice on the login page', async () => {
+    const res = await request(app).get('/portal/login');
+    expect(res.text).toContain('inactivity');
+  });
+
   it('renders the registration page', async () => {
     const res = await request(app).get('/portal/register');
     expect(res.status).toBe(200);

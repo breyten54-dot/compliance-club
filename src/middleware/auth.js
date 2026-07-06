@@ -28,6 +28,10 @@ async function requireAuth(req, res, next) {
     }
 
     req.member = rows[0];
+    // Slide the idle window: re-issue the short-lived token on every
+    // authenticated request so active members stay signed in, while 15
+    // minutes without any request lets the token expire (idle logout).
+    setTokenCookie(res, issueToken(rows[0].id));
     next();
   } catch {
     _unauthorized(req, res);

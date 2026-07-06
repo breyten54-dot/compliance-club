@@ -58,5 +58,10 @@ function showError(msg) {
   b.style.display = 'block';
 }
 
+// Show a notice when redirected here by the 15-minute idle timeout.
+if (new URLSearchParams(location.search).has('timeout')) {
+  showError('You were signed out after 15 minutes of inactivity. Please log in again.');
+}
+
 document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 </script>

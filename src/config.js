@@ -57,7 +57,11 @@ module.exports = {
 
   jwt: {
     secret: jwtSecret || 'dev-secret-change-in-production',
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    // 15-minute idle timeout. The token is re-issued on every authenticated
+    // request (see requireAuth), so an active member stays signed in while
+    // 15 minutes with no requests expires the session server-side. Keep this
+    // in sync with IDLE_TIMEOUT_MS in the portal/admin layouts.
+    expiresIn: process.env.JWT_EXPIRES_IN || '15m',
   },
 
   db: {

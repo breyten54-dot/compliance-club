@@ -245,10 +245,36 @@ table.data-table{width:100%;border-collapse:collapse}
 function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
 }
-async function logout() {
-  await fetch('/api/auth/logout', { method: 'POST' });
-  window.location.href = '/portal/login';
+async function logout(reason) {
+  try { await fetch('/api/auth/logout', { method: 'POST' }); } catch (e) {}
+  window.location.href = reason === 'idle' ? '/portal/login?timeout=1' : '/portal/login';
 }
+
+// ─── Idle timeout: log out after 15 minutes of no activity ──────────────────
+// Keep IDLE_TIMEOUT_MS in sync with jwt.expiresIn in src/config.js.
+(function () {
+  var IDLE_TIMEOUT_MS = 15 * 60 * 1000;   // 15 minutes
+  var KEEPALIVE_MS    = 5 * 60 * 1000;    // refresh server session at most every 5 min while active
+  var idleTimer, lastPing = Date.now();
+
+  function doLogoutIdle() { logout('idle'); }
+
+  function resetIdle() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(doLogoutIdle, IDLE_TIMEOUT_MS);
+    // Throttled keepalive so an active member's server token keeps sliding
+    // even while they read a page without triggering a full navigation.
+    if (Date.now() - lastPing > KEEPALIVE_MS) {
+      lastPing = Date.now();
+      fetch('/api/auth/me', { method: 'GET' }).catch(function () {});
+    }
+  }
+
+  ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
+    .forEach(function (evt) { window.addEventListener(evt, resetIdle, { passive: true }); });
+
+  resetIdle();
+})();
 </script>
 <%- script || '' %>
 </body>
