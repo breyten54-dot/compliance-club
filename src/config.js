@@ -31,8 +31,16 @@ const dbUrl = resolveDbUrl();
 // Accept the underscored names and the no-underscore variants, so a variable
 // saved as JWTSECRET / FRONTENDURL in the host dashboard still works.
 const jwtSecret = process.env.JWT_SECRET || process.env.JWTSECRET || '';
-const frontendUrl = process.env.FRONTEND_URL || process.env.FRONTENDURL || '';
-const baseUrl = process.env.BASE_URL || process.env.BASEURL || frontendUrl || '';
+
+// Vercel automatically exposes the production domain on every deployment, so
+// the app can self-configure its public URL — no manual FRONTEND_URL needed.
+const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : '';
+const frontendUrl =
+  process.env.FRONTEND_URL || process.env.FRONTENDURL || vercelUrl || '';
+const baseUrl =
+  process.env.BASE_URL || process.env.BASEURL || frontendUrl || '';
 
 module.exports = {
   // True when a real connection string was found (not the local dev fallback).
