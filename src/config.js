@@ -66,14 +66,15 @@ module.exports = {
 
   // Email: Resend (free tier) is preferred when RESEND_API_KEY is set;
   // SendGrid remains supported; with neither key, sends are logged as stubs.
+  // No-underscore variants are accepted for dashboard-entry convenience.
   resend: {
-    apiKey: process.env.RESEND_API_KEY || '',
+    apiKey: process.env.RESEND_API_KEY || process.env.RESENDAPIKEY || '',
   },
   sendgrid: {
-    apiKey: process.env.SENDGRID_API_KEY || '',
-    from: process.env.EMAIL_FROM || 'noreply@praeto.co.za',
-    fromName: process.env.EMAIL_FROM_NAME || 'Praeto Compliance Club',
-    adminEmail: process.env.ADMIN_EMAIL || 'berkeley@praeto.co.za',
+    apiKey: process.env.SENDGRID_API_KEY || process.env.SENDGRIDAPIKEY || '',
+    from: process.env.EMAIL_FROM || process.env.EMAILFROM || 'noreply@praeto.co.za',
+    fromName: process.env.EMAIL_FROM_NAME || process.env.EMAILFROMNAME || 'Praeto Compliance Club',
+    adminEmail: process.env.ADMIN_EMAIL || process.env.ADMINEMAIL || 'berkeley@praeto.co.za',
   },
 
   anthropic: {
