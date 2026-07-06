@@ -28,18 +28,27 @@ const resolveDbUrl = () => {
 };
 const dbUrl = resolveDbUrl();
 
+// Accept the underscored names and the no-underscore variants, so a variable
+// saved as JWTSECRET / FRONTENDURL in the host dashboard still works.
+const jwtSecret = process.env.JWT_SECRET || process.env.JWTSECRET || '';
+const frontendUrl = process.env.FRONTEND_URL || process.env.FRONTENDURL || '';
+const baseUrl = process.env.BASE_URL || process.env.BASEURL || frontendUrl || '';
+
 module.exports = {
   // True when a real connection string was found (not the local dev fallback).
   dbConfigured: Boolean(dbUrl),
+  // True when a real JWT signing secret is configured (not the insecure fallback).
+  jwtConfigured: Boolean(jwtSecret),
+  frontendConfigured: Boolean(frontendUrl),
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
   isProd: process.env.NODE_ENV === 'production',
 
-  baseUrl: process.env.BASE_URL || 'http://localhost:3000',
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+  baseUrl: baseUrl || 'http://localhost:3000',
+  frontendUrl: frontendUrl || 'http://localhost:3000',
 
   jwt: {
-    secret: process.env.JWT_SECRET || 'dev-secret-change-in-production',
+    secret: jwtSecret || 'dev-secret-change-in-production',
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },
 
