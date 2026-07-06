@@ -6,7 +6,31 @@ const required = (key) => {
   return val;
 };
 
+// Resolve the Postgres connection string from whichever variable the host set.
+// Vercel's Neon/Postgres integration names it differently depending on the
+// chosen prefix (DATABASE_URL, POSTGRES_URL, STORAGE_URL, …), so accept any of
+// the common names rather than forcing one. Prefer pooled URLs.
+const DB_URL_CANDIDATES = [
+  'DATABASE_URL',
+  'POSTGRES_URL',
+  'STORAGE_URL',
+  'STORAGE_POSTGRES_URL',
+  'POSTGRES_PRISMA_URL',
+  'DATABASE_URL_UNPOOLED',
+  'POSTGRES_URL_NON_POOLING',
+  'STORAGE_URL_UNPOOLED',
+];
+const resolveDbUrl = () => {
+  for (const key of DB_URL_CANDIDATES) {
+    if (process.env[key]) return process.env[key];
+  }
+  return null;
+};
+const dbUrl = resolveDbUrl();
+
 module.exports = {
+  // True when a real connection string was found (not the local dev fallback).
+  dbConfigured: Boolean(dbUrl),
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
   isProd: process.env.NODE_ENV === 'production',
@@ -20,7 +44,7 @@ module.exports = {
   },
 
   db: {
-    connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/praeto',
+    connectionString: dbUrl || 'postgresql://localhost:5432/praeto',
   },
 
   // Email: Resend (free tier) is preferred when RESEND_API_KEY is set;

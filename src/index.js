@@ -88,7 +88,7 @@ app.get(['/health', '/api/health'], async (req, res) => {
     status: 'ok',
     ts: new Date(),
     env: {
-      DATABASE_URL: Boolean(process.env.DATABASE_URL),
+      DATABASE_URL: config.dbConfigured,
       JWT_SECRET: Boolean(process.env.JWT_SECRET),
       RESEND_API_KEY: Boolean(process.env.RESEND_API_KEY),
       SENDGRID_API_KEY: Boolean(process.env.SENDGRID_API_KEY),
