@@ -6,7 +6,14 @@ const config = require('../config');
 
 const router = express.Router();
 
-const anthropic = new Anthropic({ apiKey: config.anthropic.apiKey });
+// Lazy client: the route stays mounted (and returns a clear 503) when
+// ANTHROPIC_API_KEY isn't configured yet, instead of failing opaquely.
+let anthropic = null;
+function getAnthropicClient() {
+  if (!config.anthropic.apiKey) return null;
+  if (!anthropic) anthropic = new Anthropic({ apiKey: config.anthropic.apiKey });
+  return anthropic;
+}
 
 const COMPLIANCE_SYSTEM_PROMPT = `You are the Praeto Compliance Advisor — an expert South African financial services compliance assistant embedded in the Praeto Compliance Club membership platform, operated by Berkeley Pretorius (FSP 1457, RE1 Key Individual, RE5, Registered Assessor, Registered Moderator, SDF, NCRDC).
 
@@ -38,6 +45,13 @@ IMPORTANT RULES:
 // ─── POST /api/ai/chat ────────────────────────────────────────────────────────
 router.post('/chat', requireAuth, async (req, res) => {
   const { message, conversation_id } = req.body;
+
+  const client = getAnthropicClient();
+  if (!client) {
+    return res.status(503).json({
+      error: 'The AI Compliance Advisor is not activated yet. It will be available shortly — please check back soon.',
+    });
+  }
 
   if (!message || typeof message !== 'string' || message.trim().length === 0) {
     return res.status(400).json({ error: 'Message is required.' });
@@ -79,7 +93,7 @@ router.post('/chat', requireAuth, async (req, res) => {
     const contextMessages = messages.slice(-20);
 
     // Call Anthropic
-    const response = await anthropic.messages.create({
+    const response = await client.messages.create({
       model: config.anthropic.model,
       max_tokens: 1500,
       system: COMPLIANCE_SYSTEM_PROMPT,

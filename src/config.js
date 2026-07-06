@@ -23,6 +23,11 @@ module.exports = {
     connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/praeto',
   },
 
+  // Email: Resend (free tier) is preferred when RESEND_API_KEY is set;
+  // SendGrid remains supported; with neither key, sends are logged as stubs.
+  resend: {
+    apiKey: process.env.RESEND_API_KEY || '',
+  },
   sendgrid: {
     apiKey: process.env.SENDGRID_API_KEY || '',
     from: process.env.EMAIL_FROM || 'noreply@praeto.co.za',

@@ -163,7 +163,8 @@ router.post('/webhook', express.urlencoded({ extended: false }), async (req, res
         [memberId]
       );
       if (rows.length) {
-        sendPaymentSuccessEmail(rows[0], { tier, amount }).catch(err =>
+        // Awaited: serverless may freeze after the response, dropping the send
+        await sendPaymentSuccessEmail(rows[0], { tier, amount }).catch(err =>
           console.error('Payment email failed:', err)
         );
       }

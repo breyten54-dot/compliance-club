@@ -170,8 +170,8 @@ router.post('/broadcast/send', async (req, res) => {
       [subject, body, tier_filter || null, req.member.id, recipients.length]
     );
 
-    // Send emails (fire and forget)
-    sendBroadcastEmail(recipients, subject, body).catch(err =>
+    // Awaited: serverless may freeze after the response, dropping the send
+    await sendBroadcastEmail(recipients, subject, body).catch(err =>
       console.error('Broadcast send error:', err)
     );
 

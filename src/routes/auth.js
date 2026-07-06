@@ -53,8 +53,10 @@ router.post('/register', [
       [email, password_hash, full_name, fsp_licence || null, phone || null, province || null, tier]
     );
 
-    // Fire-and-forget welcome email
-    sendWelcomeEmail(member).catch(err => console.error('Welcome email failed:', err));
+    // Await the send: on serverless the function may freeze once the response
+    // is returned, silently dropping fire-and-forget work. Failures are logged
+    // but never block registration.
+    await sendWelcomeEmail(member).catch(err => console.error('Welcome email failed:', err));
 
     const token = issueToken(member.id);
     setTokenCookie(res, token);
@@ -155,7 +157,7 @@ router.post('/forgot-password', [
         [token, expires, rows[0].id]
       );
 
-      sendPasswordResetEmail({ email, full_name: rows[0].full_name }, token)
+      await sendPasswordResetEmail({ email, full_name: rows[0].full_name }, token)
         .catch(err => console.error('Reset email failed:', err));
     }
   } catch (err) {

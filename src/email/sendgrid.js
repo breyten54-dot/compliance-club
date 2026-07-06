@@ -1,3 +1,9 @@
+// Email delivery module. Despite the filename (kept so existing requires work),
+// this supports two providers, picked by which env var is set:
+//   RESEND_API_KEY   → Resend REST API (free tier: 3,000 emails/month)
+//   SENDGRID_API_KEY → SendGrid
+// With neither configured, sends are logged to the console as stubs so the
+// rest of the app keeps working.
 const sgMail = require('@sendgrid/mail');
 const config = require('../config');
 const { welcomeHtml } = require('./templates/welcome');
@@ -5,27 +11,69 @@ const { alertHtml } = require('./templates/alert');
 const { paymentSuccessHtml } = require('./templates/payment-success');
 const { passwordResetHtml } = require('./templates/password-reset');
 
-sgMail.setApiKey(config.sendgrid.apiKey);
+if (config.sendgrid.apiKey) sgMail.setApiKey(config.sendgrid.apiKey);
 
 const FROM = {
   email: config.sendgrid.from,
   name: config.sendgrid.fromName,
 };
 
-async function send(to, subject, html) {
-  if (!config.sendgrid.apiKey || config.sendgrid.apiKey.startsWith('SG.REPLACE')) {
-    console.log(`[EMAIL STUB] To: ${typeof to === 'string' ? to : to.length + ' recipients'} | Subject: ${subject}`);
+const sendgridConfigured = () =>
+  config.sendgrid.apiKey && !config.sendgrid.apiKey.startsWith('SG.REPLACE');
+
+/**
+ * Deliver one email per recipient (recipients never see each other's address).
+ * @param {Array<{email: string, name?: string}>} recipients
+ */
+async function deliver(recipients, subject, html) {
+  if (!recipients.length) return;
+
+  if (config.resend.apiKey) {
+    // Resend batch endpoint: max 100 emails per request
+    for (let i = 0; i < recipients.length; i += 100) {
+      const batch = recipients.slice(i, i + 100).map(r => ({
+        from: `${FROM.name} <${FROM.email}>`,
+        to: [r.email],
+        subject,
+        html,
+      }));
+      const res = await fetch('https://api.resend.com/emails/batch', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${config.resend.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(batch),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`Resend API error ${res.status}: ${body}`);
+      }
+    }
     return;
   }
 
-  const msg = {
-    to,
-    from: FROM,
-    subject,
-    html,
-  };
+  if (sendgridConfigured()) {
+    // SendGrid personalizations: max 1000 per request
+    const personalizations = recipients.map(r => ({
+      to: [{ email: r.email, name: r.name || undefined }],
+    }));
+    for (let i = 0; i < personalizations.length; i += 1000) {
+      await sgMail.send({
+        from: FROM,
+        subject,
+        html,
+        personalizations: personalizations.slice(i, i + 1000),
+      });
+    }
+    return;
+  }
 
-  await sgMail.send(msg);
+  console.log(`[EMAIL STUB] To: ${recipients.length === 1 ? recipients[0].email : recipients.length + ' recipients'} | Subject: ${subject}`);
+}
+
+async function send(to, subject, html) {
+  await deliver([{ email: to }], subject, html);
 }
 
 async function sendWelcomeEmail(member) {
@@ -38,12 +86,12 @@ async function sendWelcomeEmail(member) {
     `<p>New membership application from <strong>${member.full_name}</strong>
      (${member.email}) for the <strong>${member.tier}</strong> tier.<br>
      FSP Licence: ${member.fsp_licence || 'Not provided'}</p>
-     <p><a href="${config.frontendUrl}/app/#/admin">View in Admin Panel</a></p>`
+     <p><a href="${config.frontendUrl}/admin">View in Admin Panel</a></p>`
   );
 }
 
 async function sendPasswordResetEmail(member, token) {
-  const resetUrl = `${config.frontendUrl}/app/#/portal/reset-password?token=${token}`;
+  const resetUrl = `${config.frontendUrl}/portal/reset-password?token=${token}`;
   const html = passwordResetHtml(member, resetUrl);
   await send(member.email, 'Reset Your Praeto Password', html);
 }
@@ -56,22 +104,11 @@ async function sendPaymentSuccessEmail(member, payment) {
 async function sendAlertEmail(members, alert) {
   if (!members.length) return;
   const html = alertHtml(alert);
-  const personalizations = members.map(m => ({ to: [{ email: m.email, name: m.full_name }] }));
-
-  // SendGrid batch: max 1000 personalizations per request
-  for (let i = 0; i < personalizations.length; i += 1000) {
-    const batch = personalizations.slice(i, i + 1000);
-    if (!config.sendgrid.apiKey || config.sendgrid.apiKey.startsWith('SG.REPLACE')) {
-      console.log(`[EMAIL STUB] Alert batch to ${batch.length} members: ${alert.title}`);
-      continue;
-    }
-    await sgMail.send({
-      from: FROM,
-      subject: `[COMPLIANCE ALERT] ${alert.title}`,
-      html,
-      personalizations: batch,
-    });
-  }
+  await deliver(
+    members.map(m => ({ email: m.email, name: m.full_name })),
+    `[COMPLIANCE ALERT] ${alert.title}`,
+    html
+  );
 }
 
 async function sendBroadcastEmail(recipients, subject, body) {
@@ -96,12 +133,11 @@ async function sendBroadcastEmail(recipients, subject, body) {
       </div>
     </div></body></html>`;
 
-  const personalizations = recipients.map(m => ({ to: [{ email: m.email, name: m.full_name }] }));
-
-  for (let i = 0; i < personalizations.length; i += 1000) {
-    const batch = personalizations.slice(i, i + 1000);
-    await send(batch.map(p => p.to[0]), subject, html);
-  }
+  await deliver(
+    recipients.map(m => ({ email: m.email, name: m.full_name })),
+    subject,
+    html
+  );
 }
 
 module.exports = {
