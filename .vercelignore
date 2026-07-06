@@ -3,7 +3,3 @@ node_modules
 .env
 .env.local
 README.md
-src/index.js
-src/views
-src/routes/admin.js
-src/routes/portal.js
