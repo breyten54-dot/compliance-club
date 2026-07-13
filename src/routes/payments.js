@@ -17,9 +17,13 @@ const TIER_NAMES = {
 // ─── Signature helpers ───────────────────────────────────────────────────────
 
 function pfParamString(data) {
+  // PayFast signatures are computed over fields in the order they appear in
+  // the form/ITN post — NOT alphabetically. Sorting here caused live
+  // "Generated signature does not match" 400s (verified 2026-07-13; same bug
+  // class previously fixed in Praeto Balance). Object insertion order matches
+  // both our checkout field order and the ITN body order express parses.
   return Object.keys(data)
     .filter(k => k !== 'signature' && data[k] !== '' && data[k] != null)
-    .sort()
     .map(k => `${k}=${encodeURIComponent(String(data[k])).replace(/%20/g, '+')}`)
     .join('&');
 }
@@ -86,7 +90,8 @@ router.post('/checkout', requireAuth, async (req, res) => {
     m_payment_id: payment.id,
     amount:       amount.toFixed(2),
     item_name:    itemName,
-    item_description: `Praeto Compliance Club — ${itemName}`,
+    // ASCII-only: PayFast signature validation mishandles multi-byte chars.
+    item_description: `Praeto Compliance Club - ${itemName}`,
     custom_str1:  member.id,
     custom_str2:  tier,
     // Recurring billing
