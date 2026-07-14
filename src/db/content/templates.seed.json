@@ -1,0 +1,272 @@
+[
+  {
+    "id": "TPL-001",
+    "title": "FSP Compliance Manual",
+    "category": "FAIS",
+    "tier": "Foundation",
+    "format": "docx",
+    "file": "01_FSP_Compliance_Manual.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-002",
+    "title": "Conflict of Interest Management Policy",
+    "category": "FAIS",
+    "tier": "Foundation",
+    "format": "docx",
+    "file": "02_Conflict_of_Interest_Policy.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-003",
+    "title": "Complaints Management Policy",
+    "category": "FAIS",
+    "tier": "Foundation",
+    "format": "docx",
+    "file": "03_Complaints_Management_Policy.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-004",
+    "title": "Complaints Register",
+    "category": "FAIS",
+    "tier": "Foundation",
+    "format": "xlsx",
+    "file": "Complaints_Register.xlsx",
+    "description": ""
+  },
+  {
+    "id": "TPL-005",
+    "title": "TCF Policy and Framework",
+    "category": "FAIS",
+    "tier": "Foundation",
+    "format": "docx",
+    "file": "04_TCF_Policy_Framework.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-006",
+    "title": "Record of Advice (ROA) Template",
+    "category": "FAIS",
+    "tier": "Foundation",
+    "format": "docx",
+    "file": "05_Record_of_Advice_Template.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-007",
+    "title": "Client Disclosure Pack (s.4/5/7)",
+    "category": "FAIS",
+    "tier": "Foundation",
+    "format": "docx",
+    "file": "06_Disclosure_Pack_s7.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-008",
+    "title": "Client Mandate and Service Agreement",
+    "category": "FAIS",
+    "tier": "Practitioner",
+    "format": "docx",
+    "file": "07_Client_Mandate_Service_Agreement.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-009",
+    "title": "KI Oversight and Supervision Plan",
+    "category": "FAIS",
+    "tier": "Practitioner",
+    "format": "docx",
+    "file": "08_KI_Oversight_Supervision_Plan.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-010",
+    "title": "Representative Agreement",
+    "category": "FAIS",
+    "tier": "Practitioner",
+    "format": "docx",
+    "file": "09_Representative_Agreement.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-011",
+    "title": "Representative Register",
+    "category": "FAIS",
+    "tier": "Foundation",
+    "format": "xlsx",
+    "file": "Representative_Register.xlsx",
+    "description": ""
+  },
+  {
+    "id": "TPL-012",
+    "title": "Debarment Process",
+    "category": "FAIS",
+    "tier": "Practitioner",
+    "format": "docx",
+    "file": "10_Debarment_Process.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-013",
+    "title": "Debarment Register",
+    "category": "FAIS",
+    "tier": "Practitioner",
+    "format": "xlsx",
+    "file": "Debarment_Register.xlsx",
+    "description": ""
+  },
+  {
+    "id": "TPL-014",
+    "title": "Fit & Proper / Competence Register",
+    "category": "FAIS",
+    "tier": "Foundation",
+    "format": "xlsx",
+    "file": "Fit_and_Proper_Competence_Register.xlsx",
+    "description": ""
+  },
+  {
+    "id": "TPL-015",
+    "title": "Risk Management and Compliance Programme (RMCP)",
+    "category": "FIC",
+    "tier": "Foundation",
+    "format": "docx",
+    "file": "01_RMCP.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-016",
+    "title": "CDD (KYC) Procedure and Onboarding Forms",
+    "category": "FIC",
+    "tier": "Foundation",
+    "format": "docx",
+    "file": "02_CDD_KYC_Procedure.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-017",
+    "title": "Enhanced Due Diligence Procedure",
+    "category": "FIC",
+    "tier": "Practitioner",
+    "format": "docx",
+    "file": "03_EDD_Procedure.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-018",
+    "title": "STR / CTR / TPR Reporting Procedure",
+    "category": "FIC",
+    "tier": "Foundation",
+    "format": "docx",
+    "file": "04_STR_Reporting_Procedure.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-019",
+    "title": "STR Reporting Register",
+    "category": "FIC",
+    "tier": "Foundation",
+    "format": "xlsx",
+    "file": "STR_Reporting_Register.xlsx",
+    "description": ""
+  },
+  {
+    "id": "TPL-020",
+    "title": "TFS Screening Procedure",
+    "category": "FIC",
+    "tier": "Practitioner",
+    "format": "docx",
+    "file": "05_TFS_Screening_Procedure.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-021",
+    "title": "FIC Training and Record-Keeping Policy",
+    "category": "FIC",
+    "tier": "Foundation",
+    "format": "docx",
+    "file": "06_FIC_Training_RecordKeeping_Policy.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-022",
+    "title": "FIC Training Register",
+    "category": "FIC",
+    "tier": "Foundation",
+    "format": "xlsx",
+    "file": "FIC_Training_Register.xlsx",
+    "description": ""
+  },
+  {
+    "id": "TPL-023",
+    "title": "PPR Compliance Checklist",
+    "category": "PPR",
+    "tier": "Elite",
+    "format": "xlsx",
+    "file": "PPR_Compliance_Checklist.xlsx",
+    "description": ""
+  },
+  {
+    "id": "TPL-024",
+    "title": "Replacement Advice and Disclosure Pack (s.8)",
+    "category": "PPR",
+    "tier": "Elite",
+    "format": "docx",
+    "file": "01_Replacement_Disclosure_Pack_s8.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-025",
+    "title": "Binder / Outsourcing Agreement Framework",
+    "category": "PPR",
+    "tier": "Elite",
+    "format": "docx",
+    "file": "02_Binder_Outsourcing_Agreement_Template.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-026",
+    "title": "NCA / NCR Registration and Compliance Checklist",
+    "category": "NCA",
+    "tier": "Elite",
+    "format": "xlsx",
+    "file": "NCA_Registration_Compliance_Checklist.xlsx",
+    "description": ""
+  },
+  {
+    "id": "TPL-027",
+    "title": "Affordability Assessment and Reckless Lending Pack",
+    "category": "NCA",
+    "tier": "Elite",
+    "format": "docx",
+    "file": "01_Affordability_Assessment_Pack.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-028",
+    "title": "POPIA Data Protection Policy",
+    "category": "Governance",
+    "tier": "Foundation",
+    "format": "docx",
+    "file": "01_POPIA_Data_Protection_Policy.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-029",
+    "title": "Business Continuity Plan",
+    "category": "Governance",
+    "tier": "Practitioner",
+    "format": "docx",
+    "file": "02_Business_Continuity_Plan.docx",
+    "description": ""
+  },
+  {
+    "id": "TPL-030",
+    "title": "Outsourcing Policy",
+    "category": "Governance",
+    "tier": "Practitioner",
+    "format": "docx",
+    "file": "03_Outsourcing_Policy.docx",
+    "description": ""
+  }
+]

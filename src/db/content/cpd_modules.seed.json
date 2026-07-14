@@ -1,0 +1,110 @@
+[
+  {
+    "id": "CPD-001",
+    "title": "COFI Bill Transition: What FSPs Must Prepare",
+    "cpd_hours": 1.0,
+    "tier": "Foundation",
+    "status": "live",
+    "material": "video",
+    "verifiable_cpd": true
+  },
+  {
+    "id": "CPD-002",
+    "title": "Two-Pot Retirement System: Advice Implications",
+    "cpd_hours": 0.5,
+    "tier": "Foundation",
+    "status": "live",
+    "material": "video",
+    "verifiable_cpd": true
+  },
+  {
+    "id": "CPD-003",
+    "title": "Crypto Asset FSP Licensing and Conduct",
+    "cpd_hours": 0.75,
+    "tier": "Practitioner",
+    "status": "live",
+    "material": "video",
+    "verifiable_cpd": true
+  },
+  {
+    "id": "CPD-004",
+    "title": "Post-Greylist AML/CFT: Sustaining the Reforms",
+    "cpd_hours": 0.25,
+    "tier": "Foundation",
+    "status": "live",
+    "material": "video",
+    "verifiable_cpd": true
+  },
+  {
+    "id": "CPD-005",
+    "title": "FAIS Act and General Code Essentials",
+    "cpd_hours": 3.0,
+    "tier": "Foundation",
+    "status": "content required",
+    "material": "video or PDF + 20-question bank",
+    "verifiable_cpd": true
+  },
+  {
+    "id": "CPD-006",
+    "title": "FIC Act: Building and Operating Your RMCP",
+    "cpd_hours": 4.0,
+    "tier": "Foundation",
+    "status": "content required",
+    "material": "video or PDF + 25-question bank",
+    "verifiable_cpd": true
+  },
+  {
+    "id": "CPD-007",
+    "title": "PPR, Funeral and Microinsurance Conduct Update 2026",
+    "cpd_hours": 2.0,
+    "tier": "Elite",
+    "status": "content required",
+    "material": "video + 15-question bank",
+    "verifiable_cpd": true
+  },
+  {
+    "id": "CPD-008",
+    "title": "Ethics and Professional Conduct for FSPs",
+    "cpd_hours": 3.0,
+    "tier": "Foundation",
+    "status": "content required",
+    "material": "video or PDF + 20-question bank",
+    "verifiable_cpd": true
+  },
+  {
+    "id": "CPD-009",
+    "title": "Fit and Proper and the Competence Register",
+    "cpd_hours": 2.0,
+    "tier": "Practitioner",
+    "status": "content required",
+    "material": "video + 15-question bank",
+    "verifiable_cpd": true
+  },
+  {
+    "id": "CPD-010",
+    "title": "Product Class: Long-Term Insurance and Funeral Business",
+    "cpd_hours": 4.0,
+    "tier": "Practitioner",
+    "status": "content required",
+    "material": "video + 25-question bank",
+    "verifiable_cpd": true
+  },
+  {
+    "id": "CPD-011",
+    "title": "RE1 Key Individual Examination Preparation (non-CPD)",
+    "cpd_hours": 6.0,
+    "tier": "Elite",
+    "status": "content required",
+    "material": "mock papers + video",
+    "verifiable_cpd": false
+  },
+  {
+    "id": "CPD-012",
+    "title": "RE5 Representative Examination Preparation (non-CPD)",
+    "cpd_hours": 6.0,
+    "tier": "Practitioner",
+    "status": "content required",
+    "material": "mock papers + video",
+    "verifiable_cpd": false
+  }
+]

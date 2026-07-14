@@ -1,9 +1,40 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const { requireAuth, optionalAuth } = require('../middleware/auth');
 const db = require('../db');
 const config = require('../config');
 
 const router = express.Router();
+
+const TEMPLATES_DIR = path.join(__dirname, '..', 'content', 'templates');
+const TIER_ORDER = { foundation: 0, practitioner: 1, elite: 2 };
+
+// ─── Gated template download ─────────────────────────────────────────────────
+// Streams a template file only if the member's tier is high enough. Prevents
+// path traversal (basename + extension whitelist) and re-checks tier server-side
+// so a lower-tier member can't reach an Elite template by guessing the URL.
+router.get('/templates/download/:file', requireAuth, async (req, res) => {
+  const file = path.basename(req.params.file);
+  if (!/^[\w.\-]+\.(docx|xlsx)$/i.test(file)) return res.status(400).send('Invalid file.');
+  try {
+    const { rows } = await db.query(
+      `SELECT tier_access FROM templates WHERE file_url LIKE $1 AND active = TRUE LIMIT 1`,
+      ['%/' + file]
+    );
+    if (!rows.length) return res.status(404).send('Template not found.');
+    const memberLevel = TIER_ORDER[req.member.tier] ?? 0;
+    if ((TIER_ORDER[rows[0].tier_access] ?? 0) > memberLevel) {
+      return res.status(403).send('Upgrade your membership to access this template.');
+    }
+    const filePath = path.join(TEMPLATES_DIR, file);
+    if (!fs.existsSync(filePath)) return res.status(404).send('File not available yet.');
+    return res.download(filePath, file);
+  } catch (err) {
+    console.error('template download error:', err);
+    return res.status(500).send('Download failed.');
+  }
+});
 
 // ─── Login page ───────────────────────────────────────────────────────────────
 router.get('/login', optionalAuth, (req, res) => {
