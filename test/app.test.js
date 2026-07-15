@@ -1,12 +1,6 @@
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import app from '../src/index.js';
-import db from '../src/db.js';
-
-afterAll(async () => {
-  await db.pool.end().catch(() => {});
-});
-
 describe('health', () => {
   it('reports status, env presence, and db connectivity', async () => {
     const res = await request(app).get('/health');

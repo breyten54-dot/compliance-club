@@ -48,6 +48,7 @@ const authLimiter = rateLimit({
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
 });
 
 const aiLimiter = rateLimit({
@@ -56,6 +57,7 @@ const aiLimiter = rateLimit({
   message: { error: 'AI request limit reached. Please try again in an hour.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
 });
 
 // ─── Views (EJS) ─────────────────────────────────────────────────────────────

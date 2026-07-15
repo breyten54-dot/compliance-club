@@ -5,3 +5,7 @@ node_modules
 
 .vercel
 .env*
+!.env.test.example
+
+# Test fixture files generated during download tests
+content/templates/*
