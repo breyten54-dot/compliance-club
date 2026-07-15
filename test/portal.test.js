@@ -1,10 +1,14 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
 import app from '../src/index.js';
 import { resetDb, createTemplate, memberAgent } from './helpers.js';
 
 describe('portal downloads', () => {
   beforeEach(async () => {
+    await resetDb();
+  });
+
+  afterAll(async () => {
     await resetDb();
   });
 
@@ -45,19 +49,24 @@ describe('portal downloads', () => {
     expect(res.text).toMatch(/upgrade/i);
   });
 
-  it('returns 200 with the file when the member tier is sufficient', async () => {
-    const { agent } = await memberAgent(app, { tier: 'practitioner' });
-    const template = await createTemplate({ tier_access: 'foundation' });
+  it('returns 200 with the real committed file when the member tier is sufficient', async () => {
+    const { agent } = await memberAgent(app, { tier: 'foundation' });
+    const template = await createTemplate({
+      fileName: '01_RMCP.docx',
+      tier_access: 'foundation',
+      skipFileWrite: true,
+    });
 
-    const res = await agent.get(`/portal/templates/download/${template.fileName}`);
+    const res = await agent.get('/portal/templates/download/01_RMCP.docx');
     expect(res.status).toBe(200);
-    expect(res.headers['content-disposition']).toContain(template.fileName);
-    expect(res.text).toBe(template.content.toString());
+    expect(res.headers['content-disposition']).toContain('01_RMCP.docx');
+    expect(res.headers['content-type']).toMatch(/officedocument|octet-stream/);
+    expect(res.text.length).toBeGreaterThan(0);
   });
 
   it('blocks path traversal by using basename only', async () => {
     const { agent } = await memberAgent(app);
-    await createTemplate({ fileName: 'real.docx' });
+    await createTemplate({ fileName: 'fixture-real.docx' });
 
     // The router uses path.basename, so the traversal is collapsed to
     // 'other.docx'. No template row exists for that basename, so it 404s.

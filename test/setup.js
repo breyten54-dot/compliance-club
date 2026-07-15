@@ -29,7 +29,7 @@ const schemaSql = readFileSync(schemaPath, 'utf8');
 await db.query(schemaSql);
 
 // Ensure the fixture directory for template downloads exists.
-const templatesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'content', 'templates');
+const templatesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'content', 'templates');
 if (!existsSync(templatesDir)) {
   mkdirSync(templatesDir, { recursive: true });
 }

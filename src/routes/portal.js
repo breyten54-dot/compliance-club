@@ -7,7 +7,7 @@ const config = require('../config');
 
 const router = express.Router();
 
-const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'content', 'templates');
+const TEMPLATES_DIR = path.join(__dirname, '..', 'content', 'templates');
 const TIER_ORDER = { foundation: 0, practitioner: 1, elite: 2 };
 
 // ─── Gated template download ─────────────────────────────────────────────────

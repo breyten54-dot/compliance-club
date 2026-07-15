@@ -7,7 +7,7 @@ import request from 'supertest';
 import db from '../src/db.js';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
-export const TEMPLATES_DIR = join(ROOT, '..', 'content', 'templates');
+export const TEMPLATES_DIR = join(ROOT, '..', 'src', 'content', 'templates');
 
 export async function resetDb() {
   // Clear data from all tables that tests touch. UUID tables have no identity
@@ -26,10 +26,13 @@ export async function resetDb() {
     await db.query(`TRUNCATE TABLE ${table} CASCADE`).catch(() => {});
   }
 
-  // Remove any fixture files left behind by previous download tests.
+  // Remove only throwaway fixture files created by createTemplate().
+  // Real committed templates under src/content/templates/ must NEVER be deleted.
   try {
     for (const name of readdirSync(TEMPLATES_DIR)) {
-      unlinkSync(join(TEMPLATES_DIR, name));
+      if (/^fixture-.*\.docx$/i.test(name)) {
+        unlinkSync(join(TEMPLATES_DIR, name));
+      }
     }
   } catch {
     // Directory may be empty or missing; ignore.
@@ -65,8 +68,12 @@ export async function createAdmin(overrides = {}) {
 
 export async function createTemplate(overrides = {}) {
   const fileName = overrides.fileName || `fixture-${randomUUID()}.docx`;
-  const content = overrides.content || Buffer.from('fixture template content');
-  writeFileSync(join(TEMPLATES_DIR, fileName), content);
+  // Default content for throwaway fixtures. Pass skipFileWrite: true to reuse an
+  // existing committed file (e.g. the real 01_RMCP.docx production artifact).
+  const content = overrides.content ?? Buffer.from('fixture template content');
+  if (!overrides.skipFileWrite) {
+    writeFileSync(join(TEMPLATES_DIR, fileName), content);
+  }
 
   const { rows: [template] } = await db.query(
     `INSERT INTO templates (title, description, category, tier_access, file_url, active)
