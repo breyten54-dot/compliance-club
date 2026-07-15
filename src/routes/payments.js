@@ -195,3 +195,6 @@ router.get('/history', requireAuth, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.pfParamString = pfParamString;
+module.exports.pfSignature = pfSignature;
+module.exports.pfValidate = pfValidate;

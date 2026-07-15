@@ -3,5 +3,8 @@ node_modules
 .env.local
 .vercel
 
-.vercel
 .env*
+!.env.test.example
+
+# Test fixture files generated during download tests (real templates are committed)
+src/content/templates/fixture-*.docx
