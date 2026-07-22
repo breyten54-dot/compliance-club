@@ -98,10 +98,18 @@ router.post('/chat', requireAuth, async (req, res) => {
     // Keep last 20 messages (10 turns) to manage context window
     const contextMessages = messages.slice(-20);
 
-    // Call Anthropic
+    // Call Anthropic.
+    // Prompt caching: cache the stable prefix (system prompt + prior conversation) so its
+    // tokens bill at ~0.1x instead of full price on every follow-up message. Top-level
+    // cache_control auto-places the breakpoint on the last cacheable block, so the system
+    // prompt + growing history is cached and reused as the member goes back and forth.
+    // On claude-sonnet-4-6 the cacheable-prefix floor is 2048 tokens, so the saving kicks
+    // in once system + a couple of turns clear that (confirm via cache_read_input_tokens
+    // in the usage payload below). Default 5-minute TTL keeps a live conversation warm.
     const response = await client.messages.create({
       model: config.anthropic.model,
       max_tokens: 1500,
+      cache_control: { type: 'ephemeral' },
       system: COMPLIANCE_SYSTEM_PROMPT,
       messages: contextMessages.map(m => ({
         role: m.role,
@@ -126,6 +134,10 @@ router.post('/chat', requireAuth, async (req, res) => {
       usage: {
         input_tokens: response.usage.input_tokens,
         output_tokens: response.usage.output_tokens,
+        // Surfaced so the caching win is observable, not assumed: a non-zero
+        // cache_read on follow-up messages = the stable prefix is being reused.
+        cache_read_input_tokens: response.usage.cache_read_input_tokens,
+        cache_creation_input_tokens: response.usage.cache_creation_input_tokens,
       },
     });
   } catch (err) {
